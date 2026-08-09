@@ -145,6 +145,14 @@ body {
 }
 
 /* ─── Form Inputs ──────────────────────────────────────────────── */
+input, select, textarea {
+  color-scheme: dark;
+}
+
+form {
+  touch-action: pan-y;
+}
+
 .input-field {
   width: 100%;
   padding: 12px 16px;
@@ -156,6 +164,7 @@ body {
   font-size: 0.9rem;
   transition: all 0.2s ease;
   outline: none;
+  touch-action: manipulation;
 }
 
 .input-field::placeholder {
