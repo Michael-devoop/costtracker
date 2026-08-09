@@ -7,7 +7,11 @@ import type { Vendor } from '@/types';
 export async function GET() {
   try {
     const vendors = await getVendors();
-    return NextResponse.json(vendors);
+    return NextResponse.json(vendors, {
+      headers: {
+        'Cache-Control': 'private, s-maxage=30, stale-while-revalidate=60',
+      },
+    });
   } catch {
     return NextResponse.json({ error: 'Failed to fetch vendors' }, { status: 500 });
   }

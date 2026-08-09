@@ -103,7 +103,7 @@ export default function Sidebar() {
         </div>
       </nav>
 
-      {/* Bottom Card Widget — Matching Inspiration UI "Invite a Friend" */}
+      {/* Bottom Card Widget */}
       <div className="p-4">
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#1a1d24] to-[#14161b] p-4 border border-white/10 text-center shadow-lg">
           <div className="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-[#d4fc34]/10 blur-xl pointer-events-none" />

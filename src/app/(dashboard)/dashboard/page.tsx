@@ -1,4 +1,5 @@
-export const dynamic = 'force-dynamic';
+// Revalidate dashboard data every 15 seconds on Vercel (ISR)
+export const revalidate = 15;
 
 import { getAllProjectSummaries, getVendors } from '@/lib/db';
 import DashboardView from '@/components/dashboard/DashboardView';

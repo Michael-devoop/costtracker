@@ -20,7 +20,7 @@ export default function CostsPage({
 }) {
   const { id: projectId } = use(params);
   const { costs, categories, vendors, loading, createCost, updateCost, deleteCost } = useCosts(projectId);
-  const { items, loading: itemsLoading, fetchItems, createItem } = useCostItems(projectId);
+  const { items, loading: itemsLoading, createItem, updateItem, deleteItem } = useCostItems(projectId);
   const { t } = useLanguage();
 
   const [showForm, setShowForm] = useState(false);
@@ -48,7 +48,6 @@ export default function CostsPage({
       paymentStatus: 'paid',
       entryType: 'expense',
     });
-    await fetchItems();
   };
 
   const handleSubmitCustom = async (data: {
@@ -67,13 +66,11 @@ export default function CostsPage({
     }
     setShowForm(false);
     setEditingCost(null);
-    await fetchItems();
   };
 
   const handleDelete = async (costId: string) => {
     if (confirm(t('costs.deleteConfirm'))) {
       await deleteCost(costId);
-      await fetchItems();
     }
   };
 
@@ -149,6 +146,12 @@ export default function CostsPage({
             onLogCost={handleQuickLog}
             onCreateItem={async (data) => {
               await createItem(data);
+            }}
+            onUpdateItem={async (id, data) => {
+              await updateItem(id, data);
+            }}
+            onDeleteItem={async (id) => {
+              await deleteItem(id);
             }}
           />
 

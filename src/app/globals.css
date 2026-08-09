@@ -2,7 +2,7 @@
 
 /* ─── Modern Sleek Dark Matte + Electric Lime Design System ─────── */
 :root {
-  /* Color Palette — Inspiration UI */
+  /* Color Palette — Matching Reference UI */
   --bg-primary: #0d0e12;
   --bg-secondary: #14161b;
   --bg-card: #1a1d24;
@@ -97,7 +97,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(212, 252, 52, 0.5);
 }
 
 /* ─── Matte Cards (Matching Inspiration UI) ───────────────────── */
@@ -425,38 +425,6 @@ form {
   flex-shrink: 0;
 }
 
-/* ─── Empty State ──────────────────────────────────────────────── */
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 20px;
-  text-align: center;
-}
-
-.empty-state-icon {
-  width: 64px;
-  height: 64px;
-  margin-bottom: 16px;
-  color: var(--text-muted);
-  opacity: 0.5;
-}
-
-.empty-state-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 8px;
-}
-
-.empty-state-desc {
-  font-size: 0.9rem;
-  color: var(--text-muted);
-  max-width: 320px;
-  margin-bottom: 24px;
-}
-
 /* ─── Bottom Navigation (Mobile) ───────────────────────────────── */
 .bottom-nav {
   position: fixed;
@@ -553,20 +521,6 @@ form {
 
 .cost-item-card:active {
   transform: scale(0.98);
-}
-
-/* Touch targets enhancement for mobile */
-@media (max-width: 768px) {
-  .btn {
-    min-height: 44px;
-  }
-  .input-field {
-    min-height: 46px;
-    font-size: 16px;
-  }
-  main {
-    padding-bottom: 84px !important;
-  }
 }
 
 /* Animations */

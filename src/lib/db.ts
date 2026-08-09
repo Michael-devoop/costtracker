@@ -176,6 +176,21 @@ export async function createCategory(category: BudgetCategory): Promise<BudgetCa
   return toCategory(data);
 }
 
+export async function createCategoriesBatch(categories: BudgetCategory[]): Promise<BudgetCategory[]> {
+  const supabase = await createClient();
+  const rows = categories.map((c) => ({
+    id: c.id,
+    project_id: c.projectId,
+    name: c.name,
+    code: c.code,
+    budgeted_amount: c.budgetedAmount,
+    parent_category_id: c.parentCategoryId || null,
+  }));
+  const { data, error } = await supabase.from('budget_categories').insert(rows).select();
+  if (error) throw error;
+  return (data || []).map(toCategory);
+}
+
 export async function updateCategory(id: string, updates: Partial<BudgetCategory>): Promise<BudgetCategory | null> {
   const supabase = await createClient();
   const mapped: Record<string, unknown> = {};
@@ -345,23 +360,82 @@ export async function getNotificationsByUser(userId: string): Promise<Notificati
 // ─── Cost Items ───────────────────────────────────────────────
 export async function getCostItemsByProject(projectId: string): Promise<CostItemWithTotal[]> {
   const supabase = await createClient();
-  const { data: items, error: itemsErr } = await supabase.from('cost_items').select('*').eq('project_id', projectId);
-  if (itemsErr) throw itemsErr;
 
-  const { data: costs, error: costsErr } = await supabase.from('cost_entries').select('*').eq('project_id', projectId);
-  if (costsErr) throw costsErr;
+  // Fetch cost_items and cost_entries in PARALLEL (was sequential before)
+  const [itemsResult, costsResult] = await Promise.all([
+    supabase.from('cost_items').select('*').eq('project_id', projectId),
+    supabase.from('cost_entries').select('id, category_id, amount, description, entry_type').eq('project_id', projectId),
+  ]);
 
-  const costEntries = (costs || []).map(toCostEntry);
-  return (items || [])
-    .map(toCostItem)
+  if (itemsResult.error) throw itemsResult.error;
+
+  let costItems = (itemsResult.data || []).map(toCostItem);
+
+  // Auto-seed default cost items ONLY if none exist (lazy init)
+  if (costItems.length === 0) {
+    const { data: catRows } = await supabase.from('budget_categories').select('id').eq('project_id', projectId).limit(1);
+    if (catRows && catRows.length > 0) {
+      const firstCatId = catRows[0].id as string;
+      const defaultTemplates = [
+        { name: 'Cement (ሲምንቶ)', nameAm: 'ሲምንቶ', icon: '🧱', unit: 'bags' },
+        { name: 'Rebar Steel (ብረት)', nameAm: 'የህንፃ ብረት', icon: '🔩', unit: 'kg' },
+        { name: 'Sand & Gravel (አሸዋ)', nameAm: 'አሸዋ እና ጠጠር', icon: '🪨', unit: 'm³' },
+        { name: 'Daily Labor (የሰው ኃይል)', nameAm: 'የሰው ኃይል', icon: '👷', unit: 'days' },
+        { name: 'Transport (ትራንስፖርት)', nameAm: 'ትራንስፖርት', icon: '🚛', unit: 'trips' },
+      ];
+
+      const toInsert = defaultTemplates.map((t) => ({
+        project_id: projectId,
+        category_id: firstCatId,
+        name: t.name,
+        name_am: t.nameAm,
+        icon: t.icon,
+        unit: t.unit,
+        usage_count: 0,
+      }));
+
+      const { data: seeded } = await supabase.from('cost_items').insert(toInsert).select();
+      if (seeded) {
+        costItems = seeded.map(toCostItem);
+      }
+    }
+  }
+
+  // Build cost totals using a Map for O(1) lookups instead of O(N×M) filter+includes
+  const costEntries = (costsResult.data || []);
+  const itemTotalsMap = new Map<string, { total: number; count: number }>();
+
+  for (const item of costItems) {
+    itemTotalsMap.set(item.id, { total: 0, count: 0 });
+  }
+
+  const itemNameIndex = new Map<string, string[]>();
+  for (const item of costItems) {
+    const firstWord = item.name.split(' ')[0].toLowerCase();
+    if (!itemNameIndex.has(firstWord)) {
+      itemNameIndex.set(firstWord, []);
+    }
+    itemNameIndex.get(firstWord)!.push(item.id);
+  }
+
+  for (const cost of costEntries) {
+    const desc = (cost.description as string || '').toLowerCase();
+    for (const item of costItems) {
+      if (cost.category_id === item.categoryId && desc.includes(item.name.split(' ')[0].toLowerCase())) {
+        const entry = itemTotalsMap.get(item.id)!;
+        entry.total += Number(cost.amount);
+        entry.count += 1;
+      }
+    }
+  }
+
+  return costItems
     .map((item) => {
-      const itemCosts = costEntries.filter(
-        (c) => c.categoryId === item.categoryId && c.description.toLowerCase().includes(item.name.toLowerCase())
-      );
+      const totals = itemTotalsMap.get(item.id) || { total: 0, count: 0 };
       return {
         ...item,
-        totalSpent: itemCosts.reduce((s, c) => s + c.amount, 0),
-        entryCount: itemCosts.length,
+        totalSpent: totals.total,
+        entryCount: totals.count,
       };
     })
     .sort((a, b) => b.usageCount - a.usageCount);
@@ -393,6 +467,20 @@ export async function incrementCostItemUsage(id: string): Promise<void> {
   }
 }
 
+export async function updateCostItem(id: string, updates: Partial<CostItem>): Promise<CostItem | null> {
+  const supabase = await createClient();
+  const mapped: Record<string, unknown> = {};
+  if (updates.name !== undefined) mapped.name = updates.name;
+  if (updates.nameAm !== undefined) mapped.name_am = updates.nameAm;
+  if (updates.categoryId !== undefined) mapped.category_id = updates.categoryId;
+  if (updates.icon !== undefined) mapped.icon = updates.icon;
+  if (updates.unit !== undefined) mapped.unit = updates.unit;
+
+  const { data, error } = await supabase.from('cost_items').update(mapped).eq('id', id).select().single();
+  if (error || !data) return null;
+  return toCostItem(data);
+}
+
 export async function deleteCostItem(id: string): Promise<boolean> {
   const supabase = await createClient();
   const { error } = await supabase.from('cost_items').delete().eq('id', id);
@@ -403,15 +491,17 @@ export async function deleteCostItem(id: string): Promise<boolean> {
 export async function getProjectSummary(projectId: string): Promise<ProjectSummary | null> {
   const supabase = await createClient();
 
-  const { data: projectRow } = await supabase.from('projects').select('*').eq('id', projectId).single();
-  if (!projectRow) return null;
-  const project = toProject(projectRow);
+  // Fetch project, categories, and costs in PARALLEL (was 3 sequential queries)
+  const [projectResult, catResult, costResult] = await Promise.all([
+    supabase.from('projects').select('*').eq('id', projectId).single(),
+    supabase.from('budget_categories').select('*').eq('project_id', projectId),
+    supabase.from('cost_entries').select('*').eq('project_id', projectId),
+  ]);
 
-  const { data: catRows } = await supabase.from('budget_categories').select('*').eq('project_id', projectId);
-  const categories = (catRows || []).map(toCategory);
-
-  const { data: costRows } = await supabase.from('cost_entries').select('*').eq('project_id', projectId);
-  const costs = (costRows || []).map(toCostEntry);
+  if (!projectResult.data) return null;
+  const project = toProject(projectResult.data);
+  const categories = (catResult.data || []).map(toCategory);
+  const costs = (costResult.data || []).map(toCostEntry);
 
   const totalBudget = categories.reduce((sum, c) => sum + c.budgetedAmount, 0);
   const totalSpent = costs.reduce((sum, e) => sum + (e.entryType === 'credit' ? -e.amount : e.amount), 0);
@@ -447,19 +537,36 @@ export async function getProjectSummary(projectId: string): Promise<ProjectSumma
 export async function getAllProjectSummaries(): Promise<ProjectSummary[]> {
   const supabase = await createClient();
 
-  const { data: projectRows } = await supabase.from('projects').select('*').order('created_at', { ascending: false });
+  // Fetch ALL three tables in PARALLEL (was 3 sequential queries)
+  const [projectResult, catResult, costResult] = await Promise.all([
+    supabase.from('projects').select('*').order('created_at', { ascending: false }),
+    supabase.from('budget_categories').select('*'),
+    supabase.from('cost_entries').select('*'),
+  ]);
+
+  const projectRows = projectResult.data;
   if (!projectRows || projectRows.length === 0) return [];
 
-  const { data: catRows } = await supabase.from('budget_categories').select('*');
-  const { data: costRows } = await supabase.from('cost_entries').select('*');
+  const allCategories = (catResult.data || []).map(toCategory);
+  const allCosts = (costResult.data || []).map(toCostEntry);
 
-  const allCategories = (catRows || []).map(toCategory);
-  const allCosts = (costRows || []).map(toCostEntry);
+  // Pre-index categories and costs by projectId for O(1) lookups
+  const catByProject = new Map<string, BudgetCategory[]>();
+  for (const cat of allCategories) {
+    if (!catByProject.has(cat.projectId)) catByProject.set(cat.projectId, []);
+    catByProject.get(cat.projectId)!.push(cat);
+  }
+
+  const costsByProject = new Map<string, CostEntry[]>();
+  for (const cost of allCosts) {
+    if (!costsByProject.has(cost.projectId)) costsByProject.set(cost.projectId, []);
+    costsByProject.get(cost.projectId)!.push(cost);
+  }
 
   return projectRows.map((row) => {
     const project = toProject(row);
-    const categories = allCategories.filter((c) => c.projectId === project.id);
-    const costs = allCosts.filter((e) => e.projectId === project.id);
+    const categories = catByProject.get(project.id) || [];
+    const costs = costsByProject.get(project.id) || [];
 
     const totalBudget = categories.reduce((sum, c) => sum + c.budgetedAmount, 0);
     const totalSpent = costs.reduce((sum, e) => sum + (e.entryType === 'credit' ? -e.amount : e.amount), 0);

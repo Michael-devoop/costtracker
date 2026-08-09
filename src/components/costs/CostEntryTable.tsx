@@ -37,13 +37,15 @@ export default function CostEntryTable({
 
   if (entries.length === 0) {
     return (
-      <div className="empty-state">
-        <svg className="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <rect x="2" y="3" width="20" height="18" rx="2" />
-          <path d="M2 8h20M8 3v18" />
-        </svg>
-        <p className="empty-state-title">No cost entries yet</p>
-        <p className="empty-state-desc">Start logging expenses to track your project budget.</p>
+      <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--bg-elevated)] text-[var(--text-muted)] mb-3 border border-[var(--border-subtle)]">
+          <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <rect x="2" y="3" width="20" height="18" rx="2" />
+            <path d="M2 8h20M8 3v18" />
+          </svg>
+        </div>
+        <p className="text-sm font-bold text-[var(--text-primary)] mb-1">No cost entries logged yet</p>
+        <p className="text-xs text-[var(--text-muted)] max-w-sm">Tap "+ Quick Add" or "+ Add Entry" above to log your first expense for this project.</p>
       </div>
     );
   }

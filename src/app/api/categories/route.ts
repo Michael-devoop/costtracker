@@ -12,7 +12,11 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'projectId is required' }, { status: 400 });
     }
     const categories = await getCategoriesByProject(projectId);
-    return NextResponse.json(categories);
+    return NextResponse.json(categories, {
+      headers: {
+        'Cache-Control': 'private, s-maxage=30, stale-while-revalidate=60',
+      },
+    });
   } catch {
     return NextResponse.json({ error: 'Failed to fetch categories' }, { status: 500 });
   }

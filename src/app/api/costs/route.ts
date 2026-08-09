@@ -12,7 +12,11 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'projectId is required' }, { status: 400 });
     }
     const costs = await getCostsByProject(projectId);
-    return NextResponse.json(costs);
+    return NextResponse.json(costs, {
+      headers: {
+        'Cache-Control': 'private, s-maxage=5, stale-while-revalidate=15',
+      },
+    });
   } catch {
     return NextResponse.json({ error: 'Failed to fetch costs' }, { status: 500 });
   }
@@ -38,7 +42,7 @@ export async function POST(request: Request) {
       entryDate: body.entryDate,
       paymentStatus: body.paymentStatus || 'pending',
       entryType: body.entryType || 'expense',
-      createdBy: 'user-001', // Hardcoded for MVP
+      createdBy: 'user-001',
       createdAt: now,
       updatedAt: now,
     };

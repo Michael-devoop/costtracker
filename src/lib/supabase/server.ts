@@ -1,7 +1,10 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
-export async function createClient() {
+// Cache the client within a single request lifecycle (Next.js deduplicates cookies() calls)
+let cachedPromise: ReturnType<typeof buildClient> | null = null;
+
+async function buildClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -30,4 +33,18 @@ export async function createClient() {
       },
     },
   });
+}
+
+export async function createClient() {
+  // In server components/API routes, cookies() is deduped per-request by Next.js,
+  // but createServerClient() setup is not — so we cache the promise within
+  // the same event loop tick to avoid redundant client construction.
+  if (!cachedPromise) {
+    cachedPromise = buildClient();
+    // Clear cache after current microtask to avoid cross-request leaking
+    queueMicrotask(() => {
+      cachedPromise = null;
+    });
+  }
+  return cachedPromise;
 }

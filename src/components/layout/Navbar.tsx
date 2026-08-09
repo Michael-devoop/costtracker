@@ -87,15 +87,6 @@ export default function Navbar() {
             </svg>
           </Link>
 
-          {/* Notifications Button */}
-          <button className="relative flex h-9 w-9 items-center justify-center rounded-full bg-[#1a1d24] border border-white/10 text-gray-300 hover:text-white hover:border-white/20 transition-all">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
-              <path d="M13.73 21a2 2 0 01-3.46 0" />
-            </svg>
-            <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-[#d4fc34] ring-2 ring-[#0d0e12]" />
-          </button>
-
           {/* User Welcome Pill with Dropdown */}
           <div className="relative hidden sm:block">
             <button
