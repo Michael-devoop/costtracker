@@ -1,203 +1,361 @@
-import { promises as fs } from 'fs';
-import path from 'path';
-import type { Database, Project, BudgetCategory, CostEntry, Vendor, ChangeOrder, Notification, CostItem, CostItemWithTotal, ProjectSummary, CategorySummary } from '@/types';
+import { createClient } from '@/lib/supabase/server';
+import type { Project, BudgetCategory, CostEntry, Vendor, ChangeOrder, Notification, CostItem, CostItemWithTotal, ProjectSummary, CategorySummary } from '@/types';
 
-// ─── Database Path ────────────────────────────────────────────
-const DB_PATH = path.join(process.cwd(), 'data', 'db.json');
-
-// ─── Core Read/Write ──────────────────────────────────────────
-export async function readDB(): Promise<Database> {
-  const raw = await fs.readFile(DB_PATH, 'utf-8');
-  return JSON.parse(raw);
+// ─── Helper: snake_case → camelCase row mapper ────────────────
+function toProject(row: Record<string, unknown>): Project {
+  return {
+    id: row.id as string,
+    name: row.name as string,
+    clientName: row.client_name as string,
+    address: row.address as string,
+    startDate: row.start_date as string,
+    endDate: row.end_date as string,
+    status: row.status as Project['status'],
+    totalBudget: Number(row.total_budget),
+    createdBy: row.created_by as string,
+    createdAt: row.created_at as string,
+    updatedAt: row.updated_at as string,
+  };
 }
 
-export async function writeDB(data: Database): Promise<void> {
-  await fs.writeFile(DB_PATH, JSON.stringify(data, null, 2), 'utf-8');
+function toCategory(row: Record<string, unknown>): BudgetCategory {
+  return {
+    id: row.id as string,
+    projectId: row.project_id as string,
+    name: row.name as string,
+    code: row.code as string,
+    budgetedAmount: Number(row.budgeted_amount),
+    parentCategoryId: row.parent_category_id as string | undefined,
+    createdAt: row.created_at as string,
+  };
+}
+
+function toCostEntry(row: Record<string, unknown>): CostEntry {
+  return {
+    id: row.id as string,
+    projectId: row.project_id as string,
+    categoryId: row.category_id as string,
+    vendorId: row.vendor_id as string | undefined,
+    description: row.description as string,
+    amount: Number(row.amount),
+    entryDate: row.entry_date as string,
+    paymentStatus: row.payment_status as CostEntry['paymentStatus'],
+    entryType: row.entry_type as CostEntry['entryType'],
+    createdBy: row.created_by as string,
+    createdAt: row.created_at as string,
+    updatedAt: row.updated_at as string,
+  };
+}
+
+function toVendor(row: Record<string, unknown>): Vendor {
+  return {
+    id: row.id as string,
+    name: row.name as string,
+    contactName: row.contact_name as string,
+    phone: row.phone as string,
+    email: row.email as string | undefined,
+    trade: row.trade as string,
+    createdAt: row.created_at as string,
+  };
+}
+
+function toChangeOrder(row: Record<string, unknown>): ChangeOrder {
+  return {
+    id: row.id as string,
+    projectId: row.project_id as string,
+    description: row.description as string,
+    amount: Number(row.amount),
+    status: row.status as ChangeOrder['status'],
+    requestedDate: row.requested_date as string,
+    approvedDate: row.approved_date as string | undefined,
+    createdBy: row.created_by as string,
+    createdAt: row.created_at as string,
+  };
+}
+
+function toCostItem(row: Record<string, unknown>): CostItem {
+  return {
+    id: row.id as string,
+    projectId: row.project_id as string,
+    name: row.name as string,
+    nameAm: row.name_am as string | undefined,
+    categoryId: row.category_id as string,
+    vendorId: row.vendor_id as string | undefined,
+    icon: row.icon as string,
+    unit: row.unit as string | undefined,
+    usageCount: Number(row.usage_count),
+    createdAt: row.created_at as string,
+  };
+}
+
+function toNotification(row: Record<string, unknown>): Notification {
+  return {
+    id: row.id as string,
+    userId: row.user_id as string,
+    projectId: row.project_id as string | undefined,
+    message: row.message as string,
+    isRead: row.is_read as boolean,
+    type: row.type as Notification['type'],
+    createdAt: row.created_at as string,
+  };
 }
 
 // ─── Projects ─────────────────────────────────────────────────
 export async function getProjects(): Promise<Project[]> {
-  const db = await readDB();
-  return db.projects;
+  const supabase = await createClient();
+  const { data, error } = await supabase.from('projects').select('*').order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data || []).map(toProject);
 }
 
 export async function getProjectById(id: string): Promise<Project | undefined> {
-  const db = await readDB();
-  return db.projects.find((p) => p.id === id);
+  const supabase = await createClient();
+  const { data, error } = await supabase.from('projects').select('*').eq('id', id).single();
+  if (error || !data) return undefined;
+  return toProject(data);
 }
 
 export async function createProject(project: Project): Promise<Project> {
-  const db = await readDB();
-  db.projects.push(project);
-  await writeDB(db);
-  return project;
+  const supabase = await createClient();
+  const { data, error } = await supabase.from('projects').insert({
+    id: project.id,
+    name: project.name,
+    client_name: project.clientName,
+    address: project.address,
+    start_date: project.startDate,
+    end_date: project.endDate,
+    status: project.status,
+    total_budget: project.totalBudget,
+    created_by: project.createdBy,
+  }).select().single();
+  if (error) throw error;
+  return toProject(data);
 }
 
 export async function updateProject(id: string, updates: Partial<Project>): Promise<Project | null> {
-  const db = await readDB();
-  const index = db.projects.findIndex((p) => p.id === id);
-  if (index === -1) return null;
-  db.projects[index] = { ...db.projects[index], ...updates, updatedAt: new Date().toISOString() };
-  await writeDB(db);
-  return db.projects[index];
+  const supabase = await createClient();
+  const mapped: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  if (updates.name !== undefined) mapped.name = updates.name;
+  if (updates.clientName !== undefined) mapped.client_name = updates.clientName;
+  if (updates.address !== undefined) mapped.address = updates.address;
+  if (updates.startDate !== undefined) mapped.start_date = updates.startDate;
+  if (updates.endDate !== undefined) mapped.end_date = updates.endDate;
+  if (updates.status !== undefined) mapped.status = updates.status;
+  if (updates.totalBudget !== undefined) mapped.total_budget = updates.totalBudget;
+
+  const { data, error } = await supabase.from('projects').update(mapped).eq('id', id).select().single();
+  if (error || !data) return null;
+  return toProject(data);
 }
 
 export async function deleteProject(id: string): Promise<boolean> {
-  const db = await readDB();
-  const before = db.projects.length;
-  db.projects = db.projects.filter((p) => p.id !== id);
-  // Also clean up related data
-  db.budgetCategories = db.budgetCategories.filter((c) => c.projectId !== id);
-  db.costEntries = db.costEntries.filter((e) => e.projectId !== id);
-  db.changeOrders = db.changeOrders.filter((o) => o.projectId !== id);
-  await writeDB(db);
-  return db.projects.length < before;
+  const supabase = await createClient();
+  const { error } = await supabase.from('projects').delete().eq('id', id);
+  return !error;
 }
 
 // ─── Budget Categories ────────────────────────────────────────
 export async function getCategoriesByProject(projectId: string): Promise<BudgetCategory[]> {
-  const db = await readDB();
-  return db.budgetCategories.filter((c) => c.projectId === projectId);
+  const supabase = await createClient();
+  const { data, error } = await supabase.from('budget_categories').select('*').eq('project_id', projectId);
+  if (error) throw error;
+  return (data || []).map(toCategory);
 }
 
 export async function createCategory(category: BudgetCategory): Promise<BudgetCategory> {
-  const db = await readDB();
-  db.budgetCategories.push(category);
-  await writeDB(db);
-  return category;
+  const supabase = await createClient();
+  const { data, error } = await supabase.from('budget_categories').insert({
+    id: category.id,
+    project_id: category.projectId,
+    name: category.name,
+    code: category.code,
+    budgeted_amount: category.budgetedAmount,
+    parent_category_id: category.parentCategoryId || null,
+  }).select().single();
+  if (error) throw error;
+  return toCategory(data);
 }
 
 export async function updateCategory(id: string, updates: Partial<BudgetCategory>): Promise<BudgetCategory | null> {
-  const db = await readDB();
-  const index = db.budgetCategories.findIndex((c) => c.id === id);
-  if (index === -1) return null;
-  db.budgetCategories[index] = { ...db.budgetCategories[index], ...updates };
-  await writeDB(db);
-  return db.budgetCategories[index];
+  const supabase = await createClient();
+  const mapped: Record<string, unknown> = {};
+  if (updates.name !== undefined) mapped.name = updates.name;
+  if (updates.code !== undefined) mapped.code = updates.code;
+  if (updates.budgetedAmount !== undefined) mapped.budgeted_amount = updates.budgetedAmount;
+
+  const { data, error } = await supabase.from('budget_categories').update(mapped).eq('id', id).select().single();
+  if (error || !data) return null;
+  return toCategory(data);
 }
 
 export async function deleteCategory(id: string): Promise<boolean> {
-  const db = await readDB();
-  const before = db.budgetCategories.length;
-  db.budgetCategories = db.budgetCategories.filter((c) => c.id !== id);
-  await writeDB(db);
-  return db.budgetCategories.length < before;
+  const supabase = await createClient();
+  const { error } = await supabase.from('budget_categories').delete().eq('id', id);
+  return !error;
 }
 
 // ─── Cost Entries ─────────────────────────────────────────────
 export async function getCostsByProject(projectId: string): Promise<CostEntry[]> {
-  const db = await readDB();
-  return db.costEntries
-    .filter((e) => e.projectId === projectId)
-    .sort((a, b) => new Date(b.entryDate).getTime() - new Date(a.entryDate).getTime());
+  const supabase = await createClient();
+  const { data, error } = await supabase.from('cost_entries').select('*').eq('project_id', projectId).order('entry_date', { ascending: false });
+  if (error) throw error;
+  return (data || []).map(toCostEntry);
 }
 
 export async function getCostById(id: string): Promise<CostEntry | undefined> {
-  const db = await readDB();
-  return db.costEntries.find((e) => e.id === id);
+  const supabase = await createClient();
+  const { data, error } = await supabase.from('cost_entries').select('*').eq('id', id).single();
+  if (error || !data) return undefined;
+  return toCostEntry(data);
 }
 
 export async function createCostEntry(entry: CostEntry): Promise<CostEntry> {
-  const db = await readDB();
-  db.costEntries.push(entry);
-  await writeDB(db);
-  return entry;
+  const supabase = await createClient();
+  const { data, error } = await supabase.from('cost_entries').insert({
+    id: entry.id,
+    project_id: entry.projectId,
+    category_id: entry.categoryId,
+    vendor_id: entry.vendorId || null,
+    description: entry.description,
+    amount: entry.amount,
+    entry_date: entry.entryDate,
+    payment_status: entry.paymentStatus,
+    entry_type: entry.entryType,
+    created_by: entry.createdBy,
+  }).select().single();
+  if (error) throw error;
+  return toCostEntry(data);
 }
 
 export async function updateCostEntry(id: string, updates: Partial<CostEntry>): Promise<CostEntry | null> {
-  const db = await readDB();
-  const index = db.costEntries.findIndex((e) => e.id === id);
-  if (index === -1) return null;
-  db.costEntries[index] = { ...db.costEntries[index], ...updates, updatedAt: new Date().toISOString() };
-  await writeDB(db);
-  return db.costEntries[index];
+  const supabase = await createClient();
+  const mapped: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  if (updates.description !== undefined) mapped.description = updates.description;
+  if (updates.amount !== undefined) mapped.amount = updates.amount;
+  if (updates.entryDate !== undefined) mapped.entry_date = updates.entryDate;
+  if (updates.paymentStatus !== undefined) mapped.payment_status = updates.paymentStatus;
+  if (updates.entryType !== undefined) mapped.entry_type = updates.entryType;
+  if (updates.categoryId !== undefined) mapped.category_id = updates.categoryId;
+  if (updates.vendorId !== undefined) mapped.vendor_id = updates.vendorId;
+
+  const { data, error } = await supabase.from('cost_entries').update(mapped).eq('id', id).select().single();
+  if (error || !data) return null;
+  return toCostEntry(data);
 }
 
 export async function deleteCostEntry(id: string): Promise<boolean> {
-  const db = await readDB();
-  const before = db.costEntries.length;
-  db.costEntries = db.costEntries.filter((e) => e.id !== id);
-  await writeDB(db);
-  return db.costEntries.length < before;
+  const supabase = await createClient();
+  const { error } = await supabase.from('cost_entries').delete().eq('id', id);
+  return !error;
 }
 
 // ─── Vendors ──────────────────────────────────────────────────
 export async function getVendors(): Promise<Vendor[]> {
-  const db = await readDB();
-  return db.vendors;
+  const supabase = await createClient();
+  const { data, error } = await supabase.from('vendors').select('*').order('name');
+  if (error) throw error;
+  return (data || []).map(toVendor);
 }
 
 export async function createVendor(vendor: Vendor): Promise<Vendor> {
-  const db = await readDB();
-  db.vendors.push(vendor);
-  await writeDB(db);
-  return vendor;
+  const supabase = await createClient();
+  const { data, error } = await supabase.from('vendors').insert({
+    id: vendor.id,
+    name: vendor.name,
+    contact_name: vendor.contactName,
+    phone: vendor.phone,
+    email: vendor.email || null,
+    trade: vendor.trade,
+  }).select().single();
+  if (error) throw error;
+  return toVendor(data);
 }
 
 export async function updateVendor(id: string, updates: Partial<Vendor>): Promise<Vendor | null> {
-  const db = await readDB();
-  const index = db.vendors.findIndex((v) => v.id === id);
-  if (index === -1) return null;
-  db.vendors[index] = { ...db.vendors[index], ...updates };
-  await writeDB(db);
-  return db.vendors[index];
+  const supabase = await createClient();
+  const mapped: Record<string, unknown> = {};
+  if (updates.name !== undefined) mapped.name = updates.name;
+  if (updates.contactName !== undefined) mapped.contact_name = updates.contactName;
+  if (updates.phone !== undefined) mapped.phone = updates.phone;
+  if (updates.email !== undefined) mapped.email = updates.email;
+  if (updates.trade !== undefined) mapped.trade = updates.trade;
+
+  const { data, error } = await supabase.from('vendors').update(mapped).eq('id', id).select().single();
+  if (error || !data) return null;
+  return toVendor(data);
 }
 
 export async function deleteVendor(id: string): Promise<boolean> {
-  const db = await readDB();
-  const before = db.vendors.length;
-  db.vendors = db.vendors.filter((v) => v.id !== id);
-  await writeDB(db);
-  return db.vendors.length < before;
+  const supabase = await createClient();
+  const { error } = await supabase.from('vendors').delete().eq('id', id);
+  return !error;
 }
 
 // ─── Change Orders ────────────────────────────────────────────
 export async function getChangeOrdersByProject(projectId: string): Promise<ChangeOrder[]> {
-  const db = await readDB();
-  return db.changeOrders.filter((o) => o.projectId === projectId);
+  const supabase = await createClient();
+  const { data, error } = await supabase.from('change_orders').select('*').eq('project_id', projectId).order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data || []).map(toChangeOrder);
 }
 
 export async function createChangeOrder(order: ChangeOrder): Promise<ChangeOrder> {
-  const db = await readDB();
-  db.changeOrders.push(order);
-  await writeDB(db);
-  return order;
+  const supabase = await createClient();
+  const { data, error } = await supabase.from('change_orders').insert({
+    id: order.id,
+    project_id: order.projectId,
+    description: order.description,
+    amount: order.amount,
+    status: order.status,
+    requested_date: order.requestedDate,
+    approved_date: order.approvedDate || null,
+    created_by: order.createdBy,
+  }).select().single();
+  if (error) throw error;
+  return toChangeOrder(data);
 }
 
 export async function updateChangeOrder(id: string, updates: Partial<ChangeOrder>): Promise<ChangeOrder | null> {
-  const db = await readDB();
-  const index = db.changeOrders.findIndex((o) => o.id === id);
-  if (index === -1) return null;
-  db.changeOrders[index] = { ...db.changeOrders[index], ...updates };
-  await writeDB(db);
-  return db.changeOrders[index];
+  const supabase = await createClient();
+  const mapped: Record<string, unknown> = {};
+  if (updates.description !== undefined) mapped.description = updates.description;
+  if (updates.amount !== undefined) mapped.amount = updates.amount;
+  if (updates.status !== undefined) mapped.status = updates.status;
+  if (updates.approvedDate !== undefined) mapped.approved_date = updates.approvedDate;
+
+  const { data, error } = await supabase.from('change_orders').update(mapped).eq('id', id).select().single();
+  if (error || !data) return null;
+  return toChangeOrder(data);
 }
 
 export async function deleteChangeOrder(id: string): Promise<boolean> {
-  const db = await readDB();
-  const before = db.changeOrders.length;
-  db.changeOrders = db.changeOrders.filter((o) => o.id !== id);
-  await writeDB(db);
-  return db.changeOrders.length < before;
+  const supabase = await createClient();
+  const { error } = await supabase.from('change_orders').delete().eq('id', id);
+  return !error;
 }
 
 // ─── Notifications ────────────────────────────────────────────
 export async function getNotificationsByUser(userId: string): Promise<Notification[]> {
-  const db = await readDB();
-  return db.notifications
-    .filter((n) => n.userId === userId)
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const supabase = await createClient();
+  const { data, error } = await supabase.from('notifications').select('*').eq('user_id', userId).order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data || []).map(toNotification);
 }
 
 // ─── Cost Items ───────────────────────────────────────────────
 export async function getCostItemsByProject(projectId: string): Promise<CostItemWithTotal[]> {
-  const db = await readDB();
-  const items = db.costItems.filter((i) => i.projectId === projectId);
-  const costs = db.costEntries.filter((e) => e.projectId === projectId);
+  const supabase = await createClient();
+  const { data: items, error: itemsErr } = await supabase.from('cost_items').select('*').eq('project_id', projectId);
+  if (itemsErr) throw itemsErr;
 
-  return items
+  const { data: costs, error: costsErr } = await supabase.from('cost_entries').select('*').eq('project_id', projectId);
+  if (costsErr) throw costsErr;
+
+  const costEntries = (costs || []).map(toCostEntry);
+  return (items || [])
+    .map(toCostItem)
     .map((item) => {
-      const itemCosts = costs.filter(
+      const itemCosts = costEntries.filter(
         (c) => c.categoryId === item.categoryId && c.description.toLowerCase().includes(item.name.toLowerCase())
       );
       return {
@@ -210,37 +368,50 @@ export async function getCostItemsByProject(projectId: string): Promise<CostItem
 }
 
 export async function createCostItem(item: CostItem): Promise<CostItem> {
-  const db = await readDB();
-  db.costItems.push(item);
-  await writeDB(db);
-  return item;
+  const supabase = await createClient();
+  const { data, error } = await supabase.from('cost_items').insert({
+    id: item.id,
+    project_id: item.projectId,
+    name: item.name,
+    name_am: item.nameAm || null,
+    category_id: item.categoryId,
+    vendor_id: item.vendorId || null,
+    icon: item.icon,
+    unit: item.unit || null,
+    usage_count: item.usageCount,
+  }).select().single();
+  if (error) throw error;
+  return toCostItem(data);
 }
 
 export async function incrementCostItemUsage(id: string): Promise<void> {
-  const db = await readDB();
-  const item = db.costItems.find((i) => i.id === id);
-  if (item) {
-    item.usageCount += 1;
-    await writeDB(db);
+  const supabase = await createClient();
+  // Use RPC or manual increment
+  const { data } = await supabase.from('cost_items').select('usage_count').eq('id', id).single();
+  if (data) {
+    await supabase.from('cost_items').update({ usage_count: Number(data.usage_count) + 1 }).eq('id', id);
   }
 }
 
 export async function deleteCostItem(id: string): Promise<boolean> {
-  const db = await readDB();
-  const before = db.costItems.length;
-  db.costItems = db.costItems.filter((i) => i.id !== id);
-  await writeDB(db);
-  return db.costItems.length < before;
+  const supabase = await createClient();
+  const { error } = await supabase.from('cost_items').delete().eq('id', id);
+  return !error;
 }
 
 // ─── Project Summary (computed) ───────────────────────────────
 export async function getProjectSummary(projectId: string): Promise<ProjectSummary | null> {
-  const db = await readDB();
-  const project = db.projects.find((p) => p.id === projectId);
-  if (!project) return null;
+  const supabase = await createClient();
 
-  const categories = db.budgetCategories.filter((c) => c.projectId === projectId);
-  const costs = db.costEntries.filter((e) => e.projectId === projectId);
+  const { data: projectRow } = await supabase.from('projects').select('*').eq('id', projectId).single();
+  if (!projectRow) return null;
+  const project = toProject(projectRow);
+
+  const { data: catRows } = await supabase.from('budget_categories').select('*').eq('project_id', projectId);
+  const categories = (catRows || []).map(toCategory);
+
+  const { data: costRows } = await supabase.from('cost_entries').select('*').eq('project_id', projectId);
+  const costs = (costRows || []).map(toCostEntry);
 
   const totalBudget = categories.reduce((sum, c) => sum + c.budgetedAmount, 0);
   const totalSpent = costs.reduce((sum, e) => sum + (e.entryType === 'credit' ? -e.amount : e.amount), 0);
@@ -274,12 +445,21 @@ export async function getProjectSummary(projectId: string): Promise<ProjectSumma
 
 // ─── All Projects Summary (for dashboard) ─────────────────────
 export async function getAllProjectSummaries(): Promise<ProjectSummary[]> {
-  const db = await readDB();
-  const summaries: ProjectSummary[] = [];
+  const supabase = await createClient();
 
-  for (const project of db.projects) {
-    const categories = db.budgetCategories.filter((c) => c.projectId === project.id);
-    const costs = db.costEntries.filter((e) => e.projectId === project.id);
+  const { data: projectRows } = await supabase.from('projects').select('*').order('created_at', { ascending: false });
+  if (!projectRows || projectRows.length === 0) return [];
+
+  const { data: catRows } = await supabase.from('budget_categories').select('*');
+  const { data: costRows } = await supabase.from('cost_entries').select('*');
+
+  const allCategories = (catRows || []).map(toCategory);
+  const allCosts = (costRows || []).map(toCostEntry);
+
+  return projectRows.map((row) => {
+    const project = toProject(row);
+    const categories = allCategories.filter((c) => c.projectId === project.id);
+    const costs = allCosts.filter((e) => e.projectId === project.id);
 
     const totalBudget = categories.reduce((sum, c) => sum + c.budgetedAmount, 0);
     const totalSpent = costs.reduce((sum, e) => sum + (e.entryType === 'credit' ? -e.amount : e.amount), 0);
@@ -299,7 +479,7 @@ export async function getAllProjectSummaries(): Promise<ProjectSummary[]> {
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .slice(0, 5);
 
-    summaries.push({
+    return {
       project,
       totalBudget,
       totalSpent,
@@ -308,8 +488,6 @@ export async function getAllProjectSummaries(): Promise<ProjectSummary[]> {
       categories: categorySummaries,
       recentCosts,
       costCount: costs.length,
-    });
-  }
-
-  return summaries;
+    };
+  });
 }
