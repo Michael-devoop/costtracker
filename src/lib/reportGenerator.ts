@@ -35,24 +35,32 @@ export async function generateProjectPDF(
   reportContainer.style.position = 'absolute';
   reportContainer.style.left = '-9999px';
   reportContainer.style.top = '-9999px';
-  reportContainer.style.width = '800px';
+  reportContainer.style.width = '840px';
   reportContainer.style.padding = '40px';
   reportContainer.style.backgroundColor = '#ffffff';
   reportContainer.style.color = '#0f172a';
-  reportContainer.style.fontFamily = "'Roboto', system-ui, -apple-system, sans-serif";
+  reportContainer.style.fontFamily = "'Noto Sans Ethiopic', 'Abyssinica SIL', 'Nyala', 'Ebrima', 'Roboto', system-ui, sans-serif";
   reportContainer.style.fontSize = '12px';
   reportContainer.style.lineHeight = '1.5';
 
   const isAm = lang === 'am';
 
   reportContainer.innerHTML = `
-    <div style="border-bottom: 2px solid #d4fc34; padding-bottom: 16px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-end;">
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic:wght@400;600;700;800&family=Roboto:wght@400;500;700&display=swap');
+      * {
+        font-family: 'Noto Sans Ethiopic', 'Abyssinica SIL', 'Nyala', 'Ebrima', 'Roboto', system-ui, sans-serif !important;
+      }
+    </style>
+
+    <!-- Header -->
+    <div style="border-bottom: 3px solid #d4fc34; padding-bottom: 18px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-end;">
       <div>
-        <h1 style="font-size: 24px; font-weight: 800; color: #0f172a; margin: 0 0 4px 0;">${summary.project.name}</h1>
-        <p style="font-size: 13px; color: #64748b; margin: 0;">${isAm ? 'የግንባታ ወጪ ሪፖርት' : 'Construction Cost Report'}</p>
+        <h1 style="font-size: 26px; font-weight: 800; color: #0f172a; margin: 0 0 4px 0;">${summary.project.name}</h1>
+        <p style="font-size: 13px; color: #64748b; margin: 0;">${isAm ? 'የግንባታ ወጪ ማጠቃለያ ሪፖርት' : 'Construction Cost Summary Report'}</p>
       </div>
       <div style="text-align: right;">
-        <span style="display: inline-block; background: #0f172a; color: #d4fc34; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px;">
+        <span style="display: inline-block; background: #0f172a; color: #d4fc34; font-size: 11px; font-weight: 700; padding: 4px 14px; border-radius: 20px; text-transform: uppercase;">
           ${isAm ? 'ወጪ ሪፖርት' : 'COST REPORT'}
         </span>
         <p style="font-size: 11px; color: #64748b; margin: 6px 0 0 0;">${fmtDate(new Date().toISOString())}</p>
@@ -60,15 +68,15 @@ export async function generateProjectPDF(
     </div>
 
     <!-- Project Info Grid -->
-    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; margin-bottom: 24px;">
       <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
         <div>
           <span style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">${isAm ? 'ደንበኛ' : 'CLIENT'}</span>
-          <p style="font-size: 13px; font-weight: 700; color: #0f172a; margin: 2px 0 0 0;">${summary.project.clientName}</p>
+          <p style="font-size: 13px; font-weight: 700; color: #0f172a; margin: 2px 0 0 0;">${summary.project.clientName || '-'}</p>
         </div>
         <div>
           <span style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">${isAm ? 'ቦታ' : 'LOCATION'}</span>
-          <p style="font-size: 13px; font-weight: 700; color: #0f172a; margin: 2px 0 0 0;">${summary.project.address}</p>
+          <p style="font-size: 13px; font-weight: 700; color: #0f172a; margin: 2px 0 0 0;">${summary.project.address || '-'}</p>
         </div>
         <div>
           <span style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">${isAm ? 'ሁኔታ' : 'STATUS'}</span>
@@ -246,7 +254,7 @@ export function generateProjectExcel(
   ];
 
   const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
-  wsSummary['!cols'] = [{ wch: 25 }, { wch: 40 }];
+  wsSummary['!cols'] = [{ wch: 28 }, { wch: 40 }];
   XLSX.utils.book_append_sheet(wb, wsSummary, isAm ? 'ማጠቃለያ' : 'Summary');
 
   // ── Sheet 2: Budget Categories ──
