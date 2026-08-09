@@ -1,0 +1,627 @@
+{
+  "users": [
+    {
+      "id": "user-001",
+      "name": "Michael Abebe",
+      "email": "michael@costtracker.com",
+      "passwordHash": "demo",
+      "role": "admin",
+      "createdAt": "2025-01-15T09:00:00Z"
+    },
+    {
+      "id": "user-002",
+      "name": "Sara Tadesse",
+      "email": "sara@costtracker.com",
+      "passwordHash": "demo",
+      "role": "project_manager",
+      "createdAt": "2025-02-01T09:00:00Z"
+    }
+  ],
+  "projects": [
+    {
+      "id": "proj-001",
+      "name": "Riverside Luxury Condos",
+      "clientName": "Abyssinia Development PLC",
+      "address": "Bole Sub City, Addis Ababa",
+      "startDate": "2025-03-01",
+      "endDate": "2026-02-28",
+      "status": "active",
+      "totalBudget": 2500000,
+      "createdBy": "user-001",
+      "createdAt": "2025-02-15T10:00:00Z",
+      "updatedAt": "2025-06-15T14:30:00Z"
+    }
+  ],
+  "budgetCategories": [
+    {
+      "id": "cat-001",
+      "projectId": "proj-001",
+      "name": "Site Prep & Permits",
+      "code": "SITE",
+      "budgetedAmount": 120000,
+      "createdAt": "2025-03-01T10:00:00Z"
+    },
+    {
+      "id": "cat-002",
+      "projectId": "proj-001",
+      "name": "Foundation & Concrete",
+      "code": "FNDN",
+      "budgetedAmount": 350000,
+      "createdAt": "2025-03-01T10:00:00Z"
+    },
+    {
+      "id": "cat-003",
+      "projectId": "proj-001",
+      "name": "Framing & Structural",
+      "code": "FRAM",
+      "budgetedAmount": 420000,
+      "createdAt": "2025-03-01T10:00:00Z"
+    },
+    {
+      "id": "cat-004",
+      "projectId": "proj-001",
+      "name": "Electrical",
+      "code": "ELEC",
+      "budgetedAmount": 180000,
+      "createdAt": "2025-03-01T10:00:00Z"
+    },
+    {
+      "id": "cat-005",
+      "projectId": "proj-001",
+      "name": "Plumbing",
+      "code": "PLMB",
+      "budgetedAmount": 200000,
+      "createdAt": "2025-03-01T10:00:00Z"
+    },
+    {
+      "id": "cat-006",
+      "projectId": "proj-001",
+      "name": "HVAC",
+      "code": "HVAC",
+      "budgetedAmount": 280000,
+      "createdAt": "2025-03-01T10:00:00Z"
+    },
+    {
+      "id": "cat-007",
+      "projectId": "proj-001",
+      "name": "Interior Finishes",
+      "code": "INTR",
+      "budgetedAmount": 350000,
+      "createdAt": "2025-03-01T10:00:00Z"
+    },
+    {
+      "id": "cat-008",
+      "projectId": "proj-001",
+      "name": "Roofing",
+      "code": "ROOF",
+      "budgetedAmount": 150000,
+      "createdAt": "2025-03-01T10:00:00Z"
+    },
+    {
+      "id": "cat-009",
+      "projectId": "proj-001",
+      "name": "Contingency / Overhead",
+      "code": "CONT",
+      "budgetedAmount": 250000,
+      "createdAt": "2025-03-01T10:00:00Z"
+    },
+    {
+      "id": "cat-010",
+      "projectId": "proj-001",
+      "name": "Landscaping",
+      "code": "LAND",
+      "budgetedAmount": 200000,
+      "createdAt": "2025-03-01T10:00:00Z"
+    }
+  ],
+  "vendors": [
+    {
+      "id": "vnd-001",
+      "name": "Abay Concrete Supply",
+      "contactName": "Dawit Mengistu",
+      "phone": "+251-911-223344",
+      "email": "dawit@abayconcrete.et",
+      "trade": "Concrete & Foundation",
+      "createdAt": "2025-02-01T10:00:00Z"
+    },
+    {
+      "id": "vnd-002",
+      "name": "Tekle Electric Works",
+      "contactName": "Tekle Hailu",
+      "phone": "+251-922-556677",
+      "email": "tekle@tekleelectric.et",
+      "trade": "Electrical",
+      "createdAt": "2025-02-15T10:00:00Z"
+    },
+    {
+      "id": "vnd-003",
+      "name": "Selam Plumbing Services",
+      "contactName": "Selam Bekele",
+      "phone": "+251-933-889900",
+      "email": "selam@selamplumbing.et",
+      "trade": "Plumbing",
+      "createdAt": "2025-03-01T10:00:00Z"
+    },
+    {
+      "id": "vnd-004",
+      "name": "Habesha Steel Structures",
+      "contactName": "Yonas Girma",
+      "phone": "+251-944-112233",
+      "email": "yonas@habesha-steel.et",
+      "trade": "Structural Steel",
+      "createdAt": "2025-03-15T10:00:00Z"
+    },
+    {
+      "id": "vnd-005",
+      "name": "Unity HVAC Solutions",
+      "contactName": "Hana Tadesse",
+      "phone": "+251-955-445566",
+      "email": "hana@unityhvac.et",
+      "trade": "HVAC",
+      "createdAt": "2025-04-01T10:00:00Z"
+    },
+    {
+      "id": "vnd-006",
+      "name": "Addis Interior Design",
+      "contactName": "Meron Alemu",
+      "phone": "+251-966-778899",
+      "email": "meron@addisinterior.et",
+      "trade": "Interior Finishing",
+      "createdAt": "2025-04-15T10:00:00Z"
+    },
+    {
+      "id": "vnd-007",
+      "name": "Dashen Equipment Rental",
+      "contactName": "Abel Desta",
+      "phone": "+251-977-001122",
+      "email": "abel@dashenequip.et",
+      "trade": "Equipment Rental",
+      "createdAt": "2025-05-01T10:00:00Z"
+    }
+  ],
+  "costEntries": [
+    {
+      "id": "cost-001",
+      "projectId": "proj-001",
+      "categoryId": "cat-001",
+      "vendorId": "vnd-001",
+      "description": "Site clearing and demolition",
+      "amount": 45000,
+      "entryDate": "2025-03-05",
+      "paymentStatus": "paid",
+      "entryType": "expense",
+      "createdBy": "user-001",
+      "createdAt": "2025-03-05T14:00:00Z",
+      "updatedAt": "2025-03-05T14:00:00Z"
+    },
+    {
+      "id": "cost-002",
+      "projectId": "proj-001",
+      "categoryId": "cat-001",
+      "description": "Building permits and inspections",
+      "amount": 32000,
+      "entryDate": "2025-03-10",
+      "paymentStatus": "paid",
+      "entryType": "expense",
+      "createdBy": "user-001",
+      "createdAt": "2025-03-10T09:00:00Z",
+      "updatedAt": "2025-03-10T09:00:00Z"
+    },
+    {
+      "id": "cost-003",
+      "projectId": "proj-001",
+      "categoryId": "cat-001",
+      "description": "Environmental assessment",
+      "amount": 18000,
+      "entryDate": "2025-03-12",
+      "paymentStatus": "paid",
+      "entryType": "expense",
+      "createdBy": "user-002",
+      "createdAt": "2025-03-12T11:00:00Z",
+      "updatedAt": "2025-03-12T11:00:00Z"
+    },
+    {
+      "id": "cost-004",
+      "projectId": "proj-001",
+      "categoryId": "cat-002",
+      "vendorId": "vnd-001",
+      "description": "Foundation excavation",
+      "amount": 85000,
+      "entryDate": "2025-04-01",
+      "paymentStatus": "paid",
+      "entryType": "expense",
+      "createdBy": "user-001",
+      "createdAt": "2025-04-01T08:00:00Z",
+      "updatedAt": "2025-04-01T08:00:00Z"
+    },
+    {
+      "id": "cost-005",
+      "projectId": "proj-001",
+      "categoryId": "cat-002",
+      "vendorId": "vnd-001",
+      "description": "Concrete pouring — foundation slab",
+      "amount": 128000,
+      "entryDate": "2025-04-15",
+      "paymentStatus": "paid",
+      "entryType": "expense",
+      "createdBy": "user-001",
+      "createdAt": "2025-04-15T10:00:00Z",
+      "updatedAt": "2025-04-15T10:00:00Z"
+    },
+    {
+      "id": "cost-006",
+      "projectId": "proj-001",
+      "categoryId": "cat-002",
+      "vendorId": "vnd-001",
+      "description": "Reinforcement steel for foundation",
+      "amount": 95000,
+      "entryDate": "2025-04-20",
+      "paymentStatus": "paid",
+      "entryType": "expense",
+      "createdBy": "user-002",
+      "createdAt": "2025-04-20T14:00:00Z",
+      "updatedAt": "2025-04-20T14:00:00Z"
+    },
+    {
+      "id": "cost-007",
+      "projectId": "proj-001",
+      "categoryId": "cat-003",
+      "vendorId": "vnd-004",
+      "description": "Structural steel beams — floors 1-3",
+      "amount": 180000,
+      "entryDate": "2025-05-10",
+      "paymentStatus": "paid",
+      "entryType": "expense",
+      "createdBy": "user-001",
+      "createdAt": "2025-05-10T09:00:00Z",
+      "updatedAt": "2025-05-10T09:00:00Z"
+    },
+    {
+      "id": "cost-008",
+      "projectId": "proj-001",
+      "categoryId": "cat-003",
+      "vendorId": "vnd-004",
+      "description": "Framing labor — main structure",
+      "amount": 145000,
+      "entryDate": "2025-05-25",
+      "paymentStatus": "paid",
+      "entryType": "expense",
+      "createdBy": "user-001",
+      "createdAt": "2025-05-25T16:00:00Z",
+      "updatedAt": "2025-05-25T16:00:00Z"
+    },
+    {
+      "id": "cost-009",
+      "projectId": "proj-001",
+      "categoryId": "cat-004",
+      "vendorId": "vnd-002",
+      "description": "Electrical rough-in — all floors",
+      "amount": 92000,
+      "entryDate": "2025-06-05",
+      "paymentStatus": "paid",
+      "entryType": "expense",
+      "createdBy": "user-002",
+      "createdAt": "2025-06-05T10:00:00Z",
+      "updatedAt": "2025-06-05T10:00:00Z"
+    },
+    {
+      "id": "cost-010",
+      "projectId": "proj-001",
+      "categoryId": "cat-004",
+      "vendorId": "vnd-002",
+      "description": "Main electrical panel installation",
+      "amount": 38000,
+      "entryDate": "2025-06-15",
+      "paymentStatus": "pending",
+      "entryType": "expense",
+      "createdBy": "user-001",
+      "createdAt": "2025-06-15T14:00:00Z",
+      "updatedAt": "2025-06-15T14:00:00Z"
+    },
+    {
+      "id": "cost-011",
+      "projectId": "proj-001",
+      "categoryId": "cat-005",
+      "vendorId": "vnd-003",
+      "description": "Plumbing rough-in — all units",
+      "amount": 110000,
+      "entryDate": "2025-06-20",
+      "paymentStatus": "paid",
+      "entryType": "expense",
+      "createdBy": "user-001",
+      "createdAt": "2025-06-20T09:00:00Z",
+      "updatedAt": "2025-06-20T09:00:00Z"
+    },
+    {
+      "id": "cost-012",
+      "projectId": "proj-001",
+      "categoryId": "cat-005",
+      "vendorId": "vnd-003",
+      "description": "Water heater units (x12)",
+      "amount": 48000,
+      "entryDate": "2025-07-01",
+      "paymentStatus": "pending",
+      "entryType": "expense",
+      "createdBy": "user-002",
+      "createdAt": "2025-07-01T11:00:00Z",
+      "updatedAt": "2025-07-01T11:00:00Z"
+    },
+    {
+      "id": "cost-013",
+      "projectId": "proj-001",
+      "categoryId": "cat-006",
+      "vendorId": "vnd-005",
+      "description": "HVAC ductwork installation",
+      "amount": 135000,
+      "entryDate": "2025-07-10",
+      "paymentStatus": "paid",
+      "entryType": "expense",
+      "createdBy": "user-001",
+      "createdAt": "2025-07-10T08:00:00Z",
+      "updatedAt": "2025-07-10T08:00:00Z"
+    },
+    {
+      "id": "cost-014",
+      "projectId": "proj-001",
+      "categoryId": "cat-006",
+      "vendorId": "vnd-005",
+      "description": "AC units procurement (x24)",
+      "amount": 96000,
+      "entryDate": "2025-07-20",
+      "paymentStatus": "pending",
+      "entryType": "expense",
+      "createdBy": "user-001",
+      "createdAt": "2025-07-20T15:00:00Z",
+      "updatedAt": "2025-07-20T15:00:00Z"
+    },
+    {
+      "id": "cost-015",
+      "projectId": "proj-001",
+      "categoryId": "cat-008",
+      "description": "Roofing materials and installation",
+      "amount": 125000,
+      "entryDate": "2025-07-25",
+      "paymentStatus": "pending",
+      "entryType": "expense",
+      "createdBy": "user-001",
+      "createdAt": "2025-07-25T10:00:00Z",
+      "updatedAt": "2025-07-25T10:00:00Z"
+    }
+  ],
+  "costItems": [
+    {
+      "id": "ci-001",
+      "projectId": "proj-001",
+      "name": "Nails",
+      "nameAm": "ችንካር",
+      "categoryId": "cat-003",
+      "icon": "🔩",
+      "unit": "kg",
+      "usageCount": 5,
+      "createdAt": "2025-03-01T10:00:00Z"
+    },
+    {
+      "id": "ci-002",
+      "projectId": "proj-001",
+      "name": "Cement",
+      "nameAm": "ሲሚንቶ",
+      "categoryId": "cat-002",
+      "vendorId": "vnd-001",
+      "icon": "🧱",
+      "unit": "bags",
+      "usageCount": 12,
+      "createdAt": "2025-03-01T10:00:00Z"
+    },
+    {
+      "id": "ci-003",
+      "projectId": "proj-001",
+      "name": "Sand",
+      "nameAm": "አሸዋ",
+      "categoryId": "cat-002",
+      "icon": "⏳",
+      "unit": "m³",
+      "usageCount": 8,
+      "createdAt": "2025-03-01T10:00:00Z"
+    },
+    {
+      "id": "ci-004",
+      "projectId": "proj-001",
+      "name": "Rebar/Iron",
+      "nameAm": "ብረት",
+      "categoryId": "cat-003",
+      "vendorId": "vnd-004",
+      "icon": "🔧",
+      "unit": "pieces",
+      "usageCount": 6,
+      "createdAt": "2025-03-01T10:00:00Z"
+    },
+    {
+      "id": "ci-005",
+      "projectId": "proj-001",
+      "name": "Timber/Wood",
+      "nameAm": "እንጨት",
+      "categoryId": "cat-003",
+      "icon": "🪵",
+      "unit": "pieces",
+      "usageCount": 4,
+      "createdAt": "2025-03-01T10:00:00Z"
+    },
+    {
+      "id": "ci-006",
+      "projectId": "proj-001",
+      "name": "Daily Labor",
+      "nameAm": "የቀን ሰራተኛ",
+      "categoryId": "cat-009",
+      "icon": "👷",
+      "unit": "days",
+      "usageCount": 20,
+      "createdAt": "2025-03-01T10:00:00Z"
+    },
+    {
+      "id": "ci-007",
+      "projectId": "proj-001",
+      "name": "Transport",
+      "nameAm": "ትራንስፖርት",
+      "categoryId": "cat-009",
+      "icon": "🚛",
+      "unit": "trips",
+      "usageCount": 10,
+      "createdAt": "2025-03-01T10:00:00Z"
+    },
+    {
+      "id": "ci-008",
+      "projectId": "proj-001",
+      "name": "Electrical Wire",
+      "nameAm": "ሽቦ",
+      "categoryId": "cat-004",
+      "vendorId": "vnd-002",
+      "icon": "⚡",
+      "unit": "m",
+      "usageCount": 3,
+      "createdAt": "2025-03-01T10:00:00Z"
+    },
+    {
+      "id": "ci-009",
+      "projectId": "proj-001",
+      "name": "Pipe/Plumbing",
+      "nameAm": "ቧንቧ",
+      "categoryId": "cat-005",
+      "vendorId": "vnd-003",
+      "icon": "🔧",
+      "unit": "m",
+      "usageCount": 2,
+      "createdAt": "2025-03-01T10:00:00Z"
+    },
+    {
+      "id": "ci-010",
+      "projectId": "proj-001",
+      "name": "Paint",
+      "nameAm": "ቀለም",
+      "categoryId": "cat-007",
+      "icon": "🎨",
+      "unit": "liters",
+      "usageCount": 1,
+      "createdAt": "2025-03-01T10:00:00Z"
+    },
+    {
+      "id": "ci-020",
+      "projectId": "proj-002",
+      "name": "Cement",
+      "nameAm": "ሲሚንቶ",
+      "categoryId": "cat-021",
+      "vendorId": "vnd-001",
+      "icon": "🧱",
+      "unit": "bags",
+      "usageCount": 8,
+      "createdAt": "2025-06-01T10:00:00Z"
+    },
+    {
+      "id": "ci-021",
+      "projectId": "proj-002",
+      "name": "Rebar/Iron",
+      "nameAm": "ብረት",
+      "categoryId": "cat-022",
+      "vendorId": "vnd-004",
+      "icon": "🔧",
+      "unit": "pieces",
+      "usageCount": 5,
+      "createdAt": "2025-06-01T10:00:00Z"
+    },
+    {
+      "id": "ci-022",
+      "projectId": "proj-002",
+      "name": "Daily Labor",
+      "nameAm": "የቀን ሰራተኛ",
+      "categoryId": "cat-027",
+      "icon": "👷",
+      "unit": "days",
+      "usageCount": 15,
+      "createdAt": "2025-06-01T10:00:00Z"
+    },
+    {
+      "id": "ci-023",
+      "projectId": "proj-002",
+      "name": "Sand",
+      "nameAm": "አሸዋ",
+      "categoryId": "cat-021",
+      "icon": "⏳",
+      "unit": "m³",
+      "usageCount": 6,
+      "createdAt": "2025-06-01T10:00:00Z"
+    },
+    {
+      "id": "ci-024",
+      "projectId": "proj-002",
+      "name": "Transport",
+      "nameAm": "ትራንስፖርት",
+      "categoryId": "cat-027",
+      "icon": "🚛",
+      "unit": "trips",
+      "usageCount": 4,
+      "createdAt": "2025-06-01T10:00:00Z"
+    },
+    {
+      "id": "4c13378c-7188-47d0-a56f-68d1135a7c87",
+      "projectId": "proj-003",
+      "name": "nail",
+      "nameAm": "mismar",
+      "categoryId": "cat-033",
+      "icon": "🧱",
+      "usageCount": 0,
+      "createdAt": "2026-08-09T09:48:56.581Z"
+    }
+  ],
+  "attachments": [],
+  "changeOrders": [
+    {
+      "id": "co-001",
+      "projectId": "proj-001",
+      "description": "Additional waterproofing for basement level",
+      "amount": 45000,
+      "status": "approved",
+      "requestedDate": "2025-05-15",
+      "approvedDate": "2025-05-20",
+      "createdBy": "user-002",
+      "createdAt": "2025-05-15T10:00:00Z"
+    },
+    {
+      "id": "co-002",
+      "projectId": "proj-001",
+      "description": "Upgrade lobby finishes to premium marble",
+      "amount": 85000,
+      "status": "pending",
+      "requestedDate": "2025-07-01",
+      "createdBy": "user-001",
+      "createdAt": "2025-07-01T09:00:00Z"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "notif-001",
+      "userId": "user-001",
+      "projectId": "proj-001",
+      "message": "Foundation & Concrete category is at 88% of budget",
+      "isRead": false,
+      "type": "warning",
+      "createdAt": "2025-07-28T09:00:00Z"
+    },
+    {
+      "id": "notif-002",
+      "userId": "user-001",
+      "projectId": "proj-001",
+      "message": "New change order submitted: Upgrade lobby finishes",
+      "isRead": false,
+      "type": "info",
+      "createdAt": "2025-07-01T09:05:00Z"
+    },
+    {
+      "id": "notif-003",
+      "userId": "user-001",
+      "projectId": "proj-002",
+      "message": "Framing & Structural spending approaching 40%",
+      "isRead": true,
+      "type": "info",
+      "createdAt": "2025-08-02T10:00:00Z"
+    }
+  ]
+}
