@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getProjects } from '@/lib/db';
 import ProjectsView from '@/components/projects/ProjectsView';
 

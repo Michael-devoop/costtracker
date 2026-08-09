@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getCategoriesByProject, getProjectById } from '@/lib/db';
 import CategoriesView from '@/components/categories/CategoriesView';
 import { notFound } from 'next/navigation';

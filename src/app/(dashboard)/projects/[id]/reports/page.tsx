@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getProjectSummary } from '@/lib/db';
 import ReportsView from '@/components/reports/ReportsView';
 import { notFound } from 'next/navigation';

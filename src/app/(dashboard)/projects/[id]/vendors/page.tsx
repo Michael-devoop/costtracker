@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getVendors } from '@/lib/db';
 import VendorsView from '@/components/vendors/VendorsView';
 

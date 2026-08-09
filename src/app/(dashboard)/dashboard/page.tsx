@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getAllProjectSummaries, getVendors } from '@/lib/db';
 import DashboardView from '@/components/dashboard/DashboardView';
 

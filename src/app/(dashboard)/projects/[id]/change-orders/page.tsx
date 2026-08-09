@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getChangeOrdersByProject, getProjectById } from '@/lib/db';
 import ChangeOrdersView from '@/components/change-orders/ChangeOrdersView';
 import { notFound } from 'next/navigation';
