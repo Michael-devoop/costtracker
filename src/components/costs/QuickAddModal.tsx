@@ -11,7 +11,14 @@ interface QuickAddModalProps {
   item: CostItemWithTotal | null;
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (amount: number, note?: string) => Promise<void>;
+  onSubmit: (amount: number, note?: string, workerName?: string, paymentStatus?: 'paid' | 'pending') => Promise<void>;
+}
+
+// Detect if a cost item is a labor type based on name/icon
+function isLaborItem(item: CostItemWithTotal): boolean {
+  const laborKeywords = ['labor', 'ሰራተኛ', 'ግንበኛ', 'አናጺ', 'ኤሌክትሪሻን', 'ቧንቧ', 'ፎርማን', 'mason', 'carpenter', 'electrician', 'plumber', 'foreman', 'worker', 'ሰው ኃይል'];
+  const nameLower = `${item.name} ${item.nameAm || ''}`.toLowerCase();
+  return laborKeywords.some((kw) => nameLower.includes(kw.toLowerCase())) || item.icon === '👷' || item.icon === '🧑‍🔧';
 }
 
 export default function QuickAddModal({
@@ -23,14 +30,17 @@ export default function QuickAddModal({
   const { locale, t } = useLanguage();
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
+  const [workerName, setWorkerName] = useState('');
+  const [paymentStatus, setPaymentStatus] = useState<'paid' | 'pending'>('paid');
   const [loading, setLoading] = useState(false);
 
   if (!item) return null;
 
   const displayName = locale === 'am' && item.nameAm ? item.nameAm : item.name;
   const secondaryName = locale === 'am' ? item.name : item.nameAm;
+  const isLabor = isLaborItem(item);
 
-  const presets = [100, 500, 1000, 2500, 5000];
+  const presets = isLabor ? [300, 500, 800, 1000, 1500] : [100, 500, 1000, 2500, 5000];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,9 +49,11 @@ export default function QuickAddModal({
 
     setLoading(true);
     try {
-      await onSubmit(val, note.trim() || undefined);
+      await onSubmit(val, note.trim() || undefined, workerName.trim() || undefined, paymentStatus);
       setAmount('');
       setNote('');
+      setWorkerName('');
+      setPaymentStatus('paid');
       onClose();
     } finally {
       setLoading(false);
@@ -50,7 +62,7 @@ export default function QuickAddModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={t('costs.quickAdd')} size="sm">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {/* Selected Item Card Header */}
         <div className="flex items-center gap-3.5 rounded-xl border border-[var(--border-primary)] bg-[var(--bg-elevated)]/60 p-3.5">
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 text-2xl shadow-inner">
@@ -68,6 +80,23 @@ export default function QuickAddModal({
             </p>
           </div>
         </div>
+
+        {/* Worker Name (shown for labor items) */}
+        {isLabor && (
+          <div>
+            <label className="input-label text-xs" htmlFor="quick-add-worker">
+              👷 {locale === 'am' ? 'የሰራተኛ ስም' : 'Worker Name'} ({locale === 'am' ? 'አማራጭ' : 'optional'})
+            </label>
+            <input
+              id="quick-add-worker"
+              type="text"
+              className="input-field text-sm"
+              placeholder={locale === 'am' ? 'ምሳሌ፦ አበበ ከበደ' : 'e.g., Abebe Kebede'}
+              value={workerName}
+              onChange={(e) => setWorkerName(e.target.value)}
+            />
+          </div>
+        )}
 
         {/* Amount Input */}
         <div>
@@ -104,16 +133,56 @@ export default function QuickAddModal({
           ))}
         </div>
 
+        {/* Payment Status Toggle (shown for labor items) */}
+        {isLabor && (
+          <div>
+            <label className="input-label text-xs mb-2 block">
+              {locale === 'am' ? 'የክፍያ ሁኔታ' : 'Payment Status'}
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setPaymentStatus('paid')}
+                className={`flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
+                  paymentStatus === 'paid'
+                    ? 'bg-emerald-500/20 border-2 border-emerald-500 text-emerald-400 shadow-lg shadow-emerald-500/10'
+                    : 'bg-[var(--bg-card)] border border-[var(--border-subtle)] text-[var(--text-muted)] hover:border-[var(--border-focus)]'
+                }`}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                {locale === 'am' ? 'ተከፍሏል' : 'Paid Today'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaymentStatus('pending')}
+                className={`flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
+                  paymentStatus === 'pending'
+                    ? 'bg-amber-500/20 border-2 border-amber-500 text-amber-400 shadow-lg shadow-amber-500/10'
+                    : 'bg-[var(--bg-card)] border border-[var(--border-subtle)] text-[var(--text-muted)] hover:border-[var(--border-focus)]'
+                }`}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+                {locale === 'am' ? 'በሳምንቱ መጨረሻ' : 'End of Week'}
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Optional Note */}
         <div>
           <label className="input-label text-xs" htmlFor="quick-add-note">
-            {t('costs.description')} ({t('common.cancel').toLowerCase() === 'cancel' ? 'optional' : 'አማራጭ'})
+            {t('costs.description')} ({locale === 'am' ? 'አማራጭ' : 'optional'})
           </label>
           <input
             id="quick-add-note"
             type="text"
             className="input-field text-sm"
-            placeholder="e.g., 50 kg bag, receipt #104"
+            placeholder={isLabor ? (locale === 'am' ? 'ምሳሌ፦ 8 ሰዓት ሥራ' : 'e.g., 8 hours work, foundation') : 'e.g., 50 kg bag, receipt #104'}
             value={note}
             onChange={(e) => setNote(e.target.value)}
           />

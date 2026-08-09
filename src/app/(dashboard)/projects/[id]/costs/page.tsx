@@ -37,15 +37,24 @@ export default function CostsPage({
     setShowForm(true);
   };
 
-  const handleQuickLog = async (item: CostItemWithTotal, amount: number, note?: string) => {
-    const description = note ? `${item.name}${item.nameAm ? ` (${item.nameAm})` : ''} - ${note}` : `${item.name}${item.nameAm ? ` (${item.nameAm})` : ''}`;
+  const handleQuickLog = async (item: CostItemWithTotal, amount: number, note?: string, workerName?: string, paymentStatus?: 'paid' | 'pending') => {
+    // Build description: "Worker Name — Item Name (Amharic) - note"
+    let description = '';
+    if (workerName) {
+      description += `${workerName} — `;
+    }
+    description += `${item.name}${item.nameAm ? ` (${item.nameAm})` : ''}`;
+    if (note) {
+      description += ` - ${note}`;
+    }
+
     await createCost({
       description,
       amount,
       categoryId: item.categoryId,
       vendorId: item.vendorId,
       entryDate: new Date().toISOString().split('T')[0],
-      paymentStatus: 'paid',
+      paymentStatus: paymentStatus || 'paid',
       entryType: 'expense',
     });
   };

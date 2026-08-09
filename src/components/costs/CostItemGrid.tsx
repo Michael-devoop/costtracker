@@ -11,7 +11,7 @@ import type { CostItemWithTotal, BudgetCategory } from '@/types';
 interface CostItemGridProps {
   items: CostItemWithTotal[];
   categories: BudgetCategory[];
-  onLogCost: (item: CostItemWithTotal, amount: number, note?: string) => Promise<void>;
+  onLogCost: (item: CostItemWithTotal, amount: number, note?: string, workerName?: string, paymentStatus?: 'paid' | 'pending') => Promise<void>;
   onCreateItem: (data: { name: string; nameAm?: string; categoryId: string; icon?: string; unit?: string }) => Promise<void>;
   onUpdateItem?: (id: string, data: { name: string; nameAm?: string; categoryId: string; icon?: string; unit?: string }) => Promise<void>;
   onDeleteItem?: (id: string) => Promise<void>;
@@ -217,9 +217,9 @@ export default function CostItemGrid({
         item={selectedItem}
         isOpen={!!selectedItem}
         onClose={() => setSelectedItem(null)}
-        onSubmit={async (amount, note) => {
+        onSubmit={async (amount, note, workerName, paymentStatus) => {
           if (selectedItem) {
-            await onLogCost(selectedItem, amount, note);
+            await onLogCost(selectedItem, amount, note, workerName, paymentStatus);
           }
         }}
       />
