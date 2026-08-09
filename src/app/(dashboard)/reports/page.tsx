@@ -1,4 +1,4 @@
-export const dynamic = 'force-dynamic';
+export const revalidate = 15;
 
 import { getProjects } from '@/lib/db';
 import ReportsListView from '@/components/reports/ReportsListView';

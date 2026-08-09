@@ -22,7 +22,10 @@ export async function generateProjectPDF(
   categories: BudgetCategory[],
   vendors: Vendor[],
   changeOrders: ChangeOrder[],
-  lang: 'en' | 'am' = 'en'
+  lang: 'en' | 'am' = 'en',
+  periodLabel?: string,
+  dateFrom?: string,
+  dateTo?: string
 ) {
   // Dynamic import html2canvas to ensure client-side execution
   const html2canvas = (await import('html2canvas')).default;
@@ -57,7 +60,8 @@ export async function generateProjectPDF(
     <div style="border-bottom: 3px solid #d4fc34; padding-bottom: 18px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-end;">
       <div>
         <h1 style="font-size: 26px; font-weight: 800; color: #0f172a; margin: 0 0 4px 0;">${summary.project.name}</h1>
-        <p style="font-size: 13px; color: #64748b; margin: 0;">${isAm ? 'የግንባታ ወጪ ማጠቃለያ ሪፖርት' : 'Construction Cost Summary Report'}</p>
+        <p style="font-size: 13px; color: #64748b; margin: 0;">${isAm ? 'የግንባታ ወጪ ማጠቃለያ ሪፖርት' : 'Construction Cost Summary Report'}${periodLabel ? ` — ${periodLabel}` : ''}</p>
+        ${dateFrom ? `<p style="font-size: 11px; color: #94a3b8; margin: 2px 0 0 0;">${fmtDate(dateFrom)}${dateTo && dateTo !== dateFrom ? ' – ' + fmtDate(dateTo) : ''}</p>` : ''}
       </div>
       <div style="text-align: right;">
         <span style="display: inline-block; background: #0f172a; color: #d4fc34; font-size: 11px; font-weight: 700; padding: 4px 14px; border-radius: 20px; text-transform: uppercase;">
@@ -207,7 +211,8 @@ export async function generateProjectPDF(
       heightLeft -= pageHeight;
     }
 
-    pdf.save(`${summary.project.name.replace(/\s+/g, '_')}_Report.pdf`);
+    const suffix = periodLabel ? `_${periodLabel}` : '';
+    pdf.save(`${summary.project.name.replace(/\s+/g, '_')}${suffix}_Report.pdf`);
   } catch (err) {
     console.error('Canvas PDF render error, falling back to standard jsPDF:', err);
     // Fallback standard export
@@ -229,7 +234,10 @@ export function generateProjectExcel(
   categories: BudgetCategory[],
   vendors: Vendor[],
   changeOrders: ChangeOrder[],
-  lang: 'en' | 'am' = 'en'
+  lang: 'en' | 'am' = 'en',
+  periodLabel?: string,
+  dateFrom?: string,
+  dateTo?: string
 ) {
   const wb = XLSX.utils.book_new();
   const isAm = lang === 'am';
@@ -238,7 +246,8 @@ export function generateProjectExcel(
 
   // ── Sheet 1: Summary ──
   const summaryData = [
-    [isAm ? 'የግንባታ ወጪ ሪፖርት' : 'Construction Cost Report'],
+    [isAm ? 'የግንባታ ወጪ ሪፖርት' : `Construction Cost Report${periodLabel ? ` — ${periodLabel}` : ''}`],
+    dateFrom ? [`${fmtDate(dateFrom)}${dateTo && dateTo !== dateFrom ? ' – ' + fmtDate(dateTo) : ''}`] : [],
     [],
     [isAm ? 'ፕሮጀክት' : 'Project', summary.project.name],
     [isAm ? 'ደንበኛ' : 'Client', summary.project.clientName],
@@ -349,5 +358,6 @@ export function generateProjectExcel(
     XLSX.utils.book_append_sheet(wb, wsCO, isAm ? 'የለውጥ ትዕዛዞች' : 'Change Orders');
   }
 
-  XLSX.writeFile(wb, `${summary.project.name.replace(/\s+/g, '_')}_Report.xlsx`);
+  const suffix = periodLabel ? `_${periodLabel}` : '';
+  XLSX.writeFile(wb, `${summary.project.name.replace(/\s+/g, '_')}${suffix}_Report.xlsx`);
 }
