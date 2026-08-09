@@ -45,10 +45,11 @@ export async function POST(request: Request) {
 
     // Auto-seed default budget categories in a SINGLE batch insert (was 4 sequential inserts)
     const defaultCategories = [
-      { name: 'Substructure & Foundation', code: '100', budgetedAmount: project.totalBudget * 0.3 },
-      { name: 'Superstructure & Framing', code: '200', budgetedAmount: project.totalBudget * 0.35 },
-      { name: 'Finishing & Masonry', code: '300', budgetedAmount: project.totalBudget * 0.2 },
-      { name: 'MEP (Electrical & Plumbing)', code: '400', budgetedAmount: project.totalBudget * 0.15 },
+      { name: 'Substructure & Foundation', code: '100', budgetedAmount: project.totalBudget * 0.25 },
+      { name: 'Superstructure & Framing', code: '200', budgetedAmount: project.totalBudget * 0.30 },
+      { name: 'Finishing & Masonry', code: '300', budgetedAmount: project.totalBudget * 0.17 },
+      { name: 'MEP (Electrical & Plumbing)', code: '400', budgetedAmount: project.totalBudget * 0.13 },
+      { name: 'Labor & Workforce (የሰው ኃይል)', code: '500', budgetedAmount: project.totalBudget * 0.15 },
     ];
 
     await createCategoriesBatch(

@@ -377,11 +377,18 @@ export async function getCostItemsByProject(projectId: string): Promise<CostItem
     if (catRows && catRows.length > 0) {
       const firstCatId = catRows[0].id as string;
       const defaultTemplates = [
+        // Materials
         { name: 'Cement (ሲምንቶ)', nameAm: 'ሲምንቶ', icon: '🧱', unit: 'bags' },
         { name: 'Rebar Steel (ብረት)', nameAm: 'የህንፃ ብረት', icon: '🔩', unit: 'kg' },
         { name: 'Sand & Gravel (አሸዋ)', nameAm: 'አሸዋ እና ጠጠር', icon: '🪨', unit: 'm³' },
-        { name: 'Daily Labor (የሰው ኃይል)', nameAm: 'የሰው ኃይል', icon: '👷', unit: 'days' },
         { name: 'Transport (ትራንስፖርት)', nameAm: 'ትራንስፖርት', icon: '🚛', unit: 'trips' },
+        // Labor
+        { name: 'Daily Labor (የቀን ሰራተኛ)', nameAm: 'የቀን ሰራተኛ', icon: '👷', unit: 'days' },
+        { name: 'Mason (ግንበኛ)', nameAm: 'ግንበኛ', icon: '🧑‍🔧', unit: 'days' },
+        { name: 'Carpenter (አናጺ)', nameAm: 'አናጺ', icon: '🪚', unit: 'days' },
+        { name: 'Electrician (ኤሌክትሪሻን)', nameAm: 'ኤሌክትሪሻን', icon: '⚡', unit: 'days' },
+        { name: 'Plumber (ቧንቧ ሰራተኛ)', nameAm: 'ቧንቧ ሰራተኛ', icon: '🔧', unit: 'days' },
+        { name: 'Site Foreman (ፎርማን)', nameAm: 'ፎርማን', icon: '📋', unit: 'days' },
       ];
 
       const toInsert = defaultTemplates.map((t) => ({
